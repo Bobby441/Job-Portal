@@ -6,14 +6,13 @@ export const clerkWebhooks = async(req, res) => {
   try {
 
     // create svix instance
-    const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET)
+    const whook = new Webhook (process.env.CLERK_WEBHOOK_SECRET)
 
     //verifying headers
     await whook.verify(JSON.stringify(req.body), {
       "svix-id": req.headers["svix-id"],
       "svix-timestamp": req.headers["svix-timestamp"],
-      "svix-signature": req.headers["svix-signature"],
-
+      "svix-signature": req.headers["svix-signature"]
     })
 
     // getting data from req body
@@ -24,7 +23,7 @@ export const clerkWebhooks = async(req, res) => {
         const userData = {
           _id: data.id,
           email: data.email_addresses[0].email_address,
-          fullname: data.first_name + ' ' + data.last_name,
+          name: data.first_name + ' ' + data.last_name,
           image: data.image_url,
           resume: ''
         }
@@ -37,11 +36,9 @@ export const clerkWebhooks = async(req, res) => {
       case 'user.updated': {
 
         const userData = {
-          _id: data.id,
           email: data.email_addresses[0].email_address,
-          fullname: data.first_name + ' ' + data.last_name,
+          name: data.first_name + ' ' + data.last_name,
           image: data.image_url,
-          resume: ''
         }
 
         await User.findByIdAndUpdate(data.id, userData)
@@ -51,6 +48,8 @@ export const clerkWebhooks = async(req, res) => {
 
       case 'user.deleted': {
         await User.findByIdAndDelete(data.id)
+        res.json({})
+        break
       }
 
       default : 
